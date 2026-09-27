@@ -83,7 +83,8 @@
   const links = [
     { label: 'Stellenangebote', to: '/#stellenangebote' },
     { label: 'Team', to: '/#team' },
-    { label: 'FAQ', to: '/#faq' }
+    { label: 'FAQ', to: '/#faq' },
+    { label: 'Design-Guide', to: '/design-guide' }
   ]
 
   const legalLinks = [
