@@ -62,7 +62,8 @@
     { label: 'Stellenangebote', to: '/#stellenangebote' },
     { label: 'Team', to: '/#team' },
     { label: 'FAQ', to: '/#faq' },
-    { label: 'Design-Guide', to: '/design-guide' }
+    { label: 'Design-Guide', to: '/design-guide' },
+    { label: 'Farbtheorie', to: '/farbtheorie' }
   ]
 </script>
 
