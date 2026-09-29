@@ -9,10 +9,10 @@ body {
 }
 
 @theme {
-  --color-primary: #623a82;
-  --color-secondary: #211f32;
-  --color-background: #ede3ec;
-  --color-white: #fbfafc;
+  --color-primary: #823a76;
+  --color-secondary: #2a1f32;
+  --color-background: #ede3e5;
+  --color-white: #fcfafc;
 
   --font-sans: "Figtree", sans-serif;
   --font-serif: "Figtree", sans-serif;

@@ -12,10 +12,10 @@ const RYB_RGB = [
 ]
 
 export const originalColors = {
-  primary: '#623a82',
-  secondary: '#211f32',
-  background: '#ede3ec',
-  white: '#fbfafc'
+  primary: '#823a76',
+  secondary: '#2a1f32',
+  background: '#ede3e5',
+  white: '#fcfafc'
 }
 
 export const colorSchemes = [
