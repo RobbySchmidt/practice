@@ -1,0 +1,826 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Design Vorher/Nachher</title>
+  <style>
+    /* Dieselben Schriftdateien wie im Praxis-Websites-Projekt (public/fonts) */
+    @font-face { font-family: "OpenSans"; font-style: normal; font-weight: 400; font-display: swap; src: url("fonts-praxis/open-sans-regular.woff2") format("woff2"); }
+    @font-face { font-family: "OpenSans"; font-style: normal; font-weight: 500; font-display: swap; src: url("fonts-praxis/open-sans-500.woff2") format("woff2"); }
+    @font-face { font-family: "OpenSans"; font-style: normal; font-weight: 600; font-display: swap; src: url("fonts-praxis/open-sans-600.woff2") format("woff2"); }
+    @font-face { font-family: "OpenSans"; font-style: normal; font-weight: 800; font-display: swap; src: url("fonts-praxis/open-sans-800.woff2") format("woff2"); }
+
+    /* ============================================================
+       Rahmen der Vergleichsseite (nicht Teil des Vergleichs)
+       ============================================================ */
+    :root {
+      --chrome-bg: #f1efeb;
+      --chrome-ink: #1c1a17;
+      --chrome-muted: #6b665e;
+      --chrome-line: #dcd8d1;
+      --bad: #b42318;
+      --bad-bg: #fdecea;
+      --good: #067647;
+      --good-bg: #e7f6ee;
+
+      /* Farben der Praxis-Seite (angenähert) */
+      --teal: #0095a0;       /* oklch(0.558 0.22 197), gemessen */
+      --teal-a11y: #007b84;  /* oklch(0.488 0.186 197), das Verlaufsende der Praxis-Seite: 4,83:1 mit Weiß */
+      --blue: #0a6fd1;
+      --navy: #0b2a55;
+      --green: #0b6b36;
+      --ink: #1c1a17;
+      --muted: #5b5750;
+      --bg: #faf9f6;
+      --line: #e3e0da;
+    }
+
+    * { box-sizing: border-box; }
+    /* Standard-Fett (700) gibt es in den Praxis-Schriften nicht, deshalb 600 */
+    :where(h1, h2, h3, strong, b) { font-weight: 600; }
+    body {
+      margin: 0;
+      background: var(--chrome-bg);
+      color: var(--chrome-ink);
+      font-family: "OpenSans", sans-serif;
+      font-size: 16px;
+      line-height: 1.5;
+    }
+    .wrap { max-width: 1200px; margin: 0 auto; padding: 0 16px; }
+
+    .intro { padding: 56px 16px 32px; }
+    .intro h1 { font-size: clamp(28px, 4vw, 40px); line-height: 1.15; margin: 0 0 12px; }
+    .intro p { max-width: 760px; margin: 0 0 8px; color: var(--chrome-muted); font-size: 18px; }
+
+    /* Umschalter */
+    .toggle-bar {
+      position: sticky; top: 0; z-index: 10;
+      background: rgba(241, 239, 235, 0.92);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--chrome-line);
+    }
+    .toggle-bar .wrap { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; padding-top: 12px; padding-bottom: 12px; }
+    .toggle { display: inline-flex; background: #fff; border: 1px solid var(--chrome-line); border-radius: 999px; padding: 4px; }
+    .toggle button {
+      font: inherit; font-weight: 600; border: 0; background: transparent; color: var(--chrome-muted);
+      padding: 8px 20px; border-radius: 999px; cursor: pointer;
+    }
+    .toggle button[aria-pressed="true"] { background: var(--chrome-ink); color: #fff; }
+    .toggle-hint { color: var(--chrome-muted); font-size: 14px; }
+
+    /* Kennzahlen */
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin: 24px 0 0; }
+    .stat { background: #fff; border-radius: 12px; padding: 16px 20px; }
+    .stat .label { font-size: 14px; color: var(--chrome-muted); }
+    .stat .values { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; margin-top: 4px; font-size: 14px; color: var(--chrome-muted); }
+    .stat .old { color: var(--bad); font-size: 28px; font-weight: 600; text-decoration: line-through; text-decoration-thickness: 2px; }
+    .stat .new { color: var(--good); font-size: 28px; font-weight: 600; }
+
+    /* Inventar der Schriftgrößen */
+    .inventory { background: #fff; border-radius: 12px; padding: 24px; margin-top: 24px; }
+    .inventory h2 { font-size: 20px; margin: 0 0 4px; }
+    .inventory > p { margin: 0 0 20px; color: var(--chrome-muted); }
+    .scale-row { display: grid; grid-template-columns: 110px 1fr; gap: 16px; align-items: start; padding: 16px 0; border-top: 1px solid var(--chrome-line); }
+    .scale-row .tag { font-weight: 600; font-size: 14px; padding-top: 4px; }
+    .scale-row .tag.bad { color: var(--bad); }
+    .scale-row .tag.good { color: var(--good); }
+    .chips { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; font-family: "OpenSans", sans-serif; color: var(--ink); }
+    .chip { display: inline-flex; flex-direction: column; align-items: flex-start; line-height: 1.1; }
+    .chip small { font-size: 11px; color: var(--chrome-muted); font-weight: 400; margin-top: 2px; }
+
+    /* Abschnitt: Erklärung + Beispiel */
+    .block { margin-top: 56px; }
+    .block-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 12px; }
+    .block-head .num { font-weight: 600; color: var(--chrome-muted); }
+    .block-head h2 { font-size: 24px; margin: 0; }
+    .notes { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+    .note { border-radius: 12px; padding: 16px 20px; border: 2px solid transparent; transition: border-color .2s, opacity .2s; }
+    .note h3 { font-size: 14px; text-transform: uppercase; letter-spacing: .06em; margin: 0 0 10px; }
+    .note ul { margin: 0; padding: 0; list-style: none; }
+    .note li { display: grid; grid-template-columns: 92px 1fr; gap: 10px; align-items: baseline; }
+    .note li + li { margin-top: 10px; }
+    .note.bad { background: var(--bad-bg); }
+    .note.bad h3 { color: var(--bad); }
+    .note.good { background: var(--good-bg); }
+    .note.good h3 { color: var(--good); }
+    body.show-before .note.bad { border-color: var(--bad); }
+    body.show-after .note.good { border-color: var(--good); }
+    body.show-before .note.good, body.show-after .note.bad { opacity: .55; }
+    .cat { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; padding: 2px 8px; border-radius: 999px; background: rgba(0,0,0,.07); color: var(--chrome-ink); justify-self: start; white-space: nowrap; }
+    code { font-family: ui-monospace, Consolas, monospace; font-size: .9em; background: rgba(0,0,0,.06); padding: 1px 5px; border-radius: 4px; }
+
+    .frame { border-radius: 12px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,.08); background: var(--bg); }
+    .frame-bar { display: flex; align-items: center; gap: 6px; padding: 10px 14px; background: #e6e3dd; }
+    .frame-bar span { width: 10px; height: 10px; border-radius: 50%; background: #c9c4bb; }
+    .frame-bar em { margin-left: 10px; font-style: normal; font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
+    body.show-before .frame-bar em { color: var(--bad); }
+    body.show-after .frame-bar em { color: var(--good); }
+
+    .extra { background: #fff; border-radius: 12px; padding: 24px; margin: 56px 0 64px; }
+    .extra h2 { font-size: 20px; margin: 0 0 12px; }
+    .extra ul { margin: 0; padding-left: 18px; }
+    .extra li + li { margin-top: 8px; }
+
+    @media (max-width: 760px) {
+      .notes { grid-template-columns: 1fr; }
+      .note li { grid-template-columns: 1fr; gap: 4px; }
+      .scale-row { grid-template-columns: 1fr; gap: 8px; }
+    }
+
+    /* ============================================================
+       Nachgebaute Praxis-Seite – Grundlayout (gleich für Vorher und Nachher)
+       Alles, was sich unterscheidet (Schrift, Abstände, Farben, Buttons),
+       steht weiter unten getrennt in VORHER und NACHHER.
+       ============================================================ */
+    .site { font-family: "OpenSans", sans-serif; color: var(--ink); background: var(--bg); }
+    .site * { margin: 0; }
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+    .btn { display: inline-flex; align-items: center; gap: 8px; border-radius: 999px; padding: 12px 28px; text-decoration: none; border: 1px solid transparent; }
+    .img { background: linear-gradient(135deg, #c9d6db, #9fb3ba); border-radius: 16px; }
+
+    /* Abstände laufen über Variablen, die VORHER/NACHHER unterschiedlich setzen */
+    .section { padding: var(--sec-pad-top) 0 var(--sec-pad-bottom); }
+    .stack { display: flex; flex-direction: column; align-items: flex-start; }
+    .stack > * + * { margin-top: var(--gap-text); }
+    .stack > .kicker + * { margin-top: var(--gap-kicker); }
+    .stack > .h2 + *, .stack > .h1 + * { margin-top: var(--gap-heading); }
+    .stack > .actions { margin-top: var(--gap-action); }
+    .actions { display: flex; flex-wrap: wrap; gap: 12px; }
+    .head { display: flex; flex-direction: column; align-items: flex-start; margin-bottom: var(--gap-block); }
+    .head > .kicker + * { margin-top: var(--gap-kicker); }
+
+    .s-header { background: #fff; border-bottom: 1px solid var(--line); }
+    .s-header .container { display: flex; align-items: center; justify-content: space-between; gap: 24px; min-height: 76px; flex-wrap: wrap; }
+    .logo { display: grid; }
+    .nav { display: flex; gap: 28px; flex-wrap: wrap; }
+    .nav a { color: var(--muted); text-decoration: none; }
+
+    .s-hero { display: grid; grid-template-columns: 1fr 1fr; background: var(--teal); color: #fff; }
+    /* linke Kante = Content-Linie des Containers (1100px breit, 24px Innenabstand) */
+    .s-hero .copy { padding: 72px 32px 128px max(24px, calc(100% - 526px)); justify-content: center; }
+    .s-hero .photo { background: linear-gradient(135deg, #e9ecef, #b9c7cc); position: relative; min-height: 400px; }
+    .panel { position: absolute; left: -144px; right: 32px; bottom: 32px; border-radius: 16px; display: grid; grid-template-columns: 1fr 2fr; box-shadow: 0 10px 30px rgba(0,0,0,.15); }
+    .panel > div { padding: 20px 24px; display: grid; gap: 4px; align-content: start; }
+
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: start; }
+    .divider { border-top: 2px solid var(--line); }
+
+    .contact-card { display: grid; grid-template-columns: 1fr 1fr; border-radius: 16px; overflow: hidden; }
+    .contact-card > div { padding: 32px 36px; display: flex; flex-direction: column; }
+    .contact-card > div + div { border-left: 1px solid rgba(255,255,255,.2); }
+    .contact-card .h3 { margin-bottom: 16px; }
+    .hours { display: grid; }
+    .hours div { display: flex; justify-content: space-between; gap: 16px; padding: 10px 12px; }
+    .hours-note { margin-top: 16px; }
+    .extra-row { display: flex; justify-content: space-between; gap: 16px; margin-top: 8px; }
+    .contact-card .actions { margin-top: 28px; }
+    .contact-list { list-style: none; padding: 0; display: grid; gap: 8px; }
+    .route { margin-top: 16px; }
+    .notice { display: flex; gap: 8px; align-items: center; margin-top: 32px; padding-top: 24px; border-top: 1px solid rgba(255,255,255,.25); }
+
+    .services { list-style: none; padding: 0; border-top: 1px solid var(--line); width: 100%; }
+    .services li { padding: 14px 0; border-bottom: 1px solid var(--line); }
+
+    .faq { max-width: 800px; border-top: 1px solid var(--line); }
+    .faq-item { border-bottom: 1px solid var(--line); padding: 20px 0; display: grid; gap: 12px; }
+    .faq-q { display: flex; justify-content: space-between; gap: 16px; }
+
+    .news-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
+    .news-card { display: flex; flex-direction: column; color: inherit; text-decoration: none; }
+    .news-media { aspect-ratio: 16 / 9; border-radius: 16px; display: flex; align-items: center; justify-content: center; }
+    .news-media.is-photo { background: linear-gradient(135deg, #e3e9e6, #a9bfc3); }
+    .more { display: inline-flex; align-items: center; gap: 6px; }
+
+    @media (max-width: 860px) {
+      .s-hero, .two-col, .contact-card, .news-grid { grid-template-columns: 1fr; }
+      .s-hero .copy { padding: 56px 24px; }
+      .panel { position: static; margin: 24px; grid-template-columns: 1fr; }
+      .contact-card > div + div { border-left: 0; border-top: 1px solid rgba(255,255,255,.2); }
+      .nav { gap: 16px; }
+    }
+
+    /* ============================================================
+       VORHER – nachgebaut mit den gemessenen Werten von localhost:3001
+       ============================================================ */
+    /* Abstände (gemessen): Überschrift → Text 40px, Text → Button ~28px */
+    .v-before { --sec-pad-top: 110px; --sec-pad-bottom: 110px; --gap-kicker: 14px; --gap-heading: 40px; --gap-text: 12px; --gap-action: 28px; --gap-block: 40px; }
+    .v-before .s-cta { --sec-pad-top: 80px; --sec-pad-bottom: 64px; --gap-heading: 12px; --gap-action: 36px; }
+    .v-before .s-hero .copy { --gap-kicker: 20px; --gap-heading: 30px; --gap-action: 30px; }
+    .v-before .leistungen { --gap-heading: 48px; --gap-action: 42px; }
+
+    /* Schrift: 24 Größen, 5 Stärken (700 ist nicht geladen → wird als 800 dargestellt) */
+    .v-before .logo-name       { font-size: 20px; font-weight: 800; line-height: 1.5; }
+    .v-before .logo-sub        { font-size: 20px; font-weight: 400; line-height: 1.5; }
+    .v-before .nav a           { font-size: 15.2px; font-weight: 500; }
+    .v-before .kicker          { font-size: 12.94px; font-weight: 800; text-transform: uppercase; letter-spacing: .14em; line-height: 1.2; color: var(--blue); }
+    .v-before .on-dark .kicker { color: #fff; }
+    .v-before .h1              { font-size: 56px; font-weight: 800; line-height: 1.05; letter-spacing: -.01em; }
+    .v-before .h2              { font-size: 40px; font-weight: 800; line-height: 1.14; }
+    .v-before .h2.is-cta       { font-size: 29.48px; line-height: 1.2; }
+    .v-before .h3              { font-size: 19px; font-weight: 800; line-height: 1.3; }
+    .v-before .services li     { font-size: 18px; font-weight: 800; line-height: 1.25; }
+    .v-before .text            { font-size: 17.5px; font-weight: 400; line-height: 1.65; color: var(--muted); }
+    .v-before .on-dark .text   { color: rgba(255,255,255,.85); }
+    .v-before .text.is-cta     { font-size: 17.8px; }
+    .v-before .text.is-faq     { font-size: 17px; }
+    .v-before .btn             { font-size: 15.52px; font-weight: 800; }
+    .v-before .panel-label     { font-size: 13px; font-weight: 800; }
+    .v-before .panel-label.is-up { font-size: 11px; text-transform: uppercase; letter-spacing: .14em; }
+    .v-before .panel-value     { font-size: 17px; font-weight: 800; }
+    .v-before .panel-value.is-light { font-size: 15.5px; font-weight: 400; }
+    .v-before .hours div       { font-size: 15.5px; border-bottom: 1px solid rgba(255,255,255,.15); }
+    .v-before .hours .day      { font-weight: 600; }
+    .v-before .hours .day.is-off { font-weight: 400; }
+    .v-before .hours .today    { background: #fff; color: var(--navy); border-radius: 10px; border-bottom: 0; }
+    .v-before .hours .today span { font-weight: 800; }
+    .v-before .badge           { font-size: 9px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; background: var(--navy); color: #fff; padding: 2px 6px; border-radius: 999px; margin-left: 8px; vertical-align: middle; }
+    .v-before .hours-note      { font-size: 14.5px; opacity: .85; }
+    .v-before .extra-row       { font-size: 14.5px; }
+    .v-before .extra-row b, .v-before .extra-row .strong { font-weight: 800; }
+    .v-before .contact-list    { font-size: 15px; }
+    .v-before .contact-list b  { font-weight: 800; }
+    .v-before .route           { font-size: 15px; line-height: 1.45; }
+    .v-before .notice          { font-size: 14px; }
+    .v-before .faq-q           { font-size: 17px; font-weight: 600; }
+    .v-before .hint            { font-size: 14px; color: var(--muted); }
+
+    /* Farben & Flächen: Teal, Grün und Navy als Flächen, Blau für Buttons */
+    .v-before .panel           { background: #00939a; border: 1px solid rgba(255,255,255,.25); color: #fff; }
+    .v-before .panel > div + div { border-left: 1px solid rgba(255,255,255,.25); }
+    .v-before .s-contact       { background: linear-gradient(135deg, #0096a3, #00737d); color: #fff; }
+    .v-before .contact-card    { background: linear-gradient(135deg, #0a7040, #075e2c); }
+    .v-before .s-cta.is-navy   { background: linear-gradient(135deg, #0b3466, #061c3a); color: #fff; }
+
+    /* Buttons: vier verschiedene Looks für die gleiche Art von Aktion */
+    .v-before .btn.look-white  { background: #fff; color: var(--navy); }
+    .v-before .btn.look-blue   { background: var(--blue); color: #fff; }
+    .v-before .btn.look-outline { border-color: currentColor; color: inherit; }
+    .v-before .btn.look-outline-light { border-color: var(--line); background: #fff; color: var(--ink); }
+
+    /* ============================================================
+       NACHHER – nach den Regeln aus dem Design-Guide
+       Schrift: 4 Stufen + Kleingedrucktes, 2 Stärken (400 + 600)
+         Stufe 1  36–56px  Seitentitel (H1)
+         Stufe 2  28–40px  Abschnitts-Überschriften, überall gleich
+         Stufe 3  22px     Kartentitel (H3)
+         Stufe 4  18px     Fließtext, Buttons, Listen, Navigation
+         Klein    15px     Kicker, Hinweise, Labels
+       Abstände: Kicker → Überschrift 8px, Überschrift → Text 16px,
+                 Text → Aktion 48px, alle Abschnitte gleich hoch gepolstert
+       ============================================================ */
+    .v-after {
+      --t-h1: clamp(2.25rem, 1.55rem + 2.9vw, 3.5rem);
+      --t-h2: clamp(1.75rem, 1.4rem + 1.5vw, 2.5rem);
+      --t-h3: 1.375rem;
+      --t-body: 1.125rem;
+      --t-small: 0.9375rem;
+      --sec-pad-top: 96px; --sec-pad-bottom: 96px;
+      --gap-kicker: 8px; --gap-heading: 16px; --gap-text: 16px; --gap-action: 48px; --gap-block: 40px;
+    }
+    .v-after .logo-name        { font-size: var(--t-body); font-weight: 600; line-height: 1.4; }
+    .v-after .logo-sub         { font-size: var(--t-body); font-weight: 400; line-height: 1.4; }
+    .v-after .nav a            { font-size: var(--t-body); font-weight: 400; }
+    .v-after .kicker           { font-size: var(--t-small); font-weight: 600; text-transform: uppercase; letter-spacing: .08em; line-height: 1.3; color: var(--muted); }
+    /* auf Teal keine Transparenz: Weiß 80 % hätte nur 2,75:1 */
+    .v-after .on-dark .kicker  { color: #fff; }
+    .v-after .h1               { font-size: var(--t-h1); font-weight: 600; line-height: 1.1; letter-spacing: -.01em; }
+    .v-after .h2               { font-size: var(--t-h2); font-weight: 600; line-height: 1.15; }
+    .v-after .h3               { font-size: var(--t-h3); font-weight: 600; line-height: 1.3; }
+    .v-after .services li      { font-size: var(--t-body); font-weight: 600; }
+    .v-after .text             { font-size: var(--t-body); font-weight: 400; line-height: 1.6; color: var(--muted); }
+    .v-after .on-dark .text    { color: #fff; }
+    .v-after .btn              { font-size: var(--t-body); font-weight: 600; padding: 12px 24px; }
+    .v-after .kicker, .v-after .h1, .v-after .h2 { text-wrap: balance; }
+    .v-after .notice           { border-top: 0; padding-top: 0; }
+    .v-after .panel-label      { font-size: var(--t-small); color: var(--muted); }
+    .v-after .panel-value      { font-size: var(--t-body); font-weight: 600; }
+    .v-after .panel-value.is-light { font-weight: 400; }
+    .v-after .hours div        { font-size: var(--t-body); }
+    .v-after .hours .today     { background: rgba(255,255,255,.14); border-radius: 8px; }
+    .v-after .hours .today span { font-weight: 600; }
+    .v-after .badge            { font-size: var(--t-small); margin-left: 8px; }
+    .v-after .badge::before    { content: "· "; }
+    .v-after .hours-note       { font-size: var(--t-small); }
+    .v-after .extra-row        { font-size: var(--t-body); }
+    .v-after .extra-row b, .v-after .extra-row .strong { font-weight: 600; }
+    .v-after .contact-list     { font-size: var(--t-body); }
+    .v-after .contact-list b   { font-weight: 600; }
+    .v-after .route            { font-size: var(--t-body); line-height: 1.6; }
+    .v-after .notice           { font-size: var(--t-small); }
+    .v-after .faq-q            { font-size: var(--t-body); font-weight: 600; }
+    .v-after .hint             { font-size: var(--t-small); color: var(--muted); }
+
+    /* Weniger ist mehr: Trennlinie + großer Abstand ist doppelt, doppelter Termin-Block fällt weg */
+    .v-after .divider          { border-top: 0; }
+    .v-after .is-duplicate     { display: none; }
+
+    /* Farben & Flächen: nur Teal und Navy als Flächen, Blau ausschließlich für Aktionen */
+    .v-after .panel            { background: #fff; color: var(--ink); }
+    .v-after .panel > div + div { border-left: 1px solid var(--line); }
+    .v-after .s-hero           { background: var(--teal-a11y); }
+    .v-after .s-contact        { background: var(--teal-a11y); color: #fff; }
+    .v-after .contact-card     { background: rgba(0,0,0,.14); }
+    .v-after .s-cta            { background: var(--navy); color: #fff; }
+    .v-after .s-cta .kicker    { color: rgba(255,255,255,.8); }
+    .v-after .s-cta .text      { color: rgba(255,255,255,.85); }
+    .v-after .s-cta .btn.act-main { background: #fff; color: var(--navy); }
+
+    /* Aktuelles-Kacheln (gemessen auf /aktuelles) */
+    .v-before .news .h2        { letter-spacing: -.02em; }
+    .v-before .news .kicker    { font-size: 13px; letter-spacing: .12em; }
+    .v-before .news-media.is-empty { background: oklch(0.945 0.043 250); color: oklch(0.558 0.165 250); }
+    .v-before .news-date       { margin-top: 18px; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .12em; line-height: 1.2; color: oklch(0.4 0.125 250); }
+    .v-before .news-title      { margin-top: 10px; font-size: 22px; font-weight: 800; line-height: 1.22; letter-spacing: -.02em; }
+    .v-before .news-teaser     { margin-top: 8px; font-size: 15px; line-height: 1.5; color: var(--muted); }
+    .v-before .more            { margin-top: 16px; font-size: 14px; font-weight: 800; color: oklch(0.478 0.149 250); }
+    .v-before .news-card.no-link { cursor: default; }
+    .v-before .news-card.no-link .more { display: none; }
+
+    .v-after .news .kicker     { display: none; }
+    .v-after .news-media.is-empty { background: #efece6; color: #a8a298; }
+    .v-after .news-date        { margin-top: 20px; font-size: var(--t-small); color: var(--muted); }
+    .v-after .news-title       { margin-top: 4px; font-size: var(--t-h3); font-weight: 600; line-height: 1.3; text-wrap: balance; }
+    .v-after .news-teaser      { margin-top: 12px; font-size: var(--t-body); line-height: 1.6; color: var(--muted); }
+    .v-after .more             { margin-top: auto; padding-top: 24px; font-size: var(--t-body); font-weight: 600; color: var(--blue); }
+    .v-after .news-card:hover .news-title { text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 2px; }
+    /* neueste Meldung zuerst */
+    .v-after .news-card.newest { order: -1; }
+
+    /* Buttons: eine Regel – Hauptaktion gefüllt, Nebenaktion mit Rahmen */
+    .v-after .btn.act-main     { background: var(--blue); color: #fff; border-color: transparent; }
+    .v-after .on-dark .btn.act-main { background: #fff; color: var(--navy); }
+    .v-after .btn.act-second   { background: transparent; border-color: currentColor; color: inherit; }
+  </style>
+</head>
+<body class="show-before">
+
+  <header class="wrap intro">
+    <h1>Design Vorher / Nachher</h1>
+    <p>Die Startseite und die Aktuelles-Kacheln der HNO-Praxis, nachgebaut mit den Werten, die im Browser gemessen wurden. „Nachher“ nutzt exakt dasselbe HTML. Nur das CSS für Schrift, Abstände, Farben und Buttons ist nach den Regeln aus dem Design-Guide neu aufgebaut.</p>
+    <p>Bilder sind durch Farbflächen ersetzt, damit der Blick auf dem Design bleibt.</p>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="label">Schriftgrößen</div>
+        <div class="values"><span class="old">24</span><span class="new">5</span><span>4 Stufen + klein</span></div>
+      </div>
+      <div class="stat">
+        <div class="label">Schriftstärken</div>
+        <div class="values"><span class="old">5</span><span class="new">2</span><span>400 + 600</span></div>
+      </div>
+      <div class="stat">
+        <div class="label">Button-Looks</div>
+        <div class="values"><span class="old">4</span><span class="new">2</span><span>Haupt- + Nebenaktion</span></div>
+      </div>
+      <div class="stat">
+        <div class="label">Farbflächen</div>
+        <div class="values"><span class="old">3</span><span class="new">2</span><span>Teal + Navy, ohne Grün</span></div>
+      </div>
+      <div class="stat">
+        <div class="label">Kontrast kleiner Text auf Teal</div>
+        <div class="values"><span class="old">2,75</span><span class="new">4,83</span><span>AA braucht 4,5</span></div>
+      </div>
+      <div class="stat">
+        <div class="label">Termin-Abschnitte</div>
+        <div class="values"><span class="old">2</span><span class="new">1</span><span>kein Doppel</span></div>
+      </div>
+    </div>
+
+    <div class="inventory">
+      <h2>Alle Schriftgrößen im Überblick</h2>
+      <p>In Originalgröße. Vorher liegen viele Größen so dicht beieinander, dass man sie nicht unterscheiden kann. Sie wirken dann nicht wie eine Stufe, sondern wie ein Versehen.</p>
+      <div class="scale-row">
+        <div class="tag bad">Vorher · 24</div>
+        <div class="chips" id="chips-before"></div>
+      </div>
+      <div class="scale-row">
+        <div class="tag good">Nachher · 5</div>
+        <div class="chips" id="chips-after"></div>
+      </div>
+    </div>
+  </header>
+
+  <div class="toggle-bar">
+    <div class="wrap">
+      <div class="toggle" role="group" aria-label="Version wählen">
+        <button type="button" data-version="before" aria-pressed="true">Vorher</button>
+        <button type="button" data-version="after" aria-pressed="false">Nachher</button>
+      </div>
+      <span class="toggle-hint">Tipp: Mit der Leertaste umschalten und auf die Details achten.</span>
+    </div>
+  </div>
+
+  <main class="wrap">
+
+    <!-- 1 Hero -->
+    <section class="block">
+      <div class="block-head"><span class="num">01</span><h2>Header &amp; Hero</h2></div>
+      <div class="notes">
+        <div class="note bad">
+          <h3>Vorher</h3>
+          <ul>
+            <li><span class="cat">Typografie</span><span>Der Kicker hat nur <code>12,9px</code>, ist extrafett und in Großbuchstaben. Für Patient:innen, oft ältere Menschen, ist das schwer lesbar.</span></li>
+            <li><span class="cat">Hierarchie</span><span>H1, Kicker, Button und Panel sind alle extrafett (800). Wenn alles fett ist, sticht nichts heraus.</span></li>
+            <li><span class="cat">Farbe</span><span>Das Info-Panel ist Teal auf Teal. Es hebt sich kaum ab, obwohl hier das Wichtigste steht: Öffnungszeit und Telefon.</span></li>
+            <li><span class="cat">Kontrast</span><span>Weiße Schrift auf Teal (<code>oklch(0.558 0.22 197)</code>) erreicht nur <code>3,46:1</code>. Das reicht für die große H1 (ab 24px gilt 3:1), aber nicht für Kicker, Button-Umfeld und Panel (4,5:1 nötig).</span></li>
+            <li><span class="cat">Typografie</span><span>Das Panel mischt <code>11</code>, <code>13</code>, <code>15,5</code> und <code>17px</code> in einem kleinen Kasten.</span></li>
+          </ul>
+        </div>
+        <div class="note good">
+          <h3>Nachher</h3>
+          <ul>
+            <li><span class="cat">Typografie</span><span>Der Kicker hat die kleine Stufe (<code>15px</code>) und 600, das ist gut lesbar und tritt trotzdem zurück.</span></li>
+            <li><span class="cat">Hierarchie</span><span>H1 in 600 statt 800 wirkt ruhiger und seriöser. Für Arztpraxen gilt: Vertrauen vor Kreativität.</span></li>
+            <li><span class="cat">Farbe</span><span>Das Panel ist weiß. Es liegt klar über Foto und Fläche, und Telefon und Öffnungszeit springen sofort ins Auge.</span></li>
+            <li><span class="cat">Kontrast</span><span>Die Teal-Fläche nutzt den dunkleren Ton, den die Seite schon im Verlauf hat (<code>oklch(0.488 0.186 197)</code>). Weiß erreicht darauf <code>4,83:1</code>.</span></li>
+            <li><span class="cat">Abstände</span><span>Kicker und H1 stehen eng zusammen (8px), dann folgt mehr Luft vor dem Button. So wirkt die Aktion wie ein eigener Schritt.</span></li>
+          </ul>
+        </div>
+      </div>
+      <div class="frame">
+        <div class="frame-bar"><span></span><span></span><span></span><em class="version-label">Vorher</em></div>
+        <div class="site v-before">
+          <div class="s-header">
+            <div class="container">
+              <div class="logo"><span class="logo-name">HNO-Praxis</span><span class="logo-sub">Dr. med. Veit Zebralla</span></div>
+              <nav class="nav"><a href="#">Team</a><a href="#">Leistungen</a><a href="#">Aktuelles</a><a href="#">Karriere</a><a href="#">Downloads</a></nav>
+            </div>
+          </div>
+          <div class="s-hero on-dark">
+            <div class="copy stack">
+              <span class="kicker">Kompetent und freundlich für Ihre Gesundheit da</span>
+              <h2 class="h1">Willkommen in Ihrer HNO-Praxis</h2>
+              <div class="actions"><a class="btn look-white act-main" href="#">Termin vereinbaren</a></div>
+            </div>
+            <div class="photo">
+              <div class="panel">
+                <div><span class="panel-label">Heute geöffnet</span><span class="panel-value">8–13 Uhr</span></div>
+                <div><span class="panel-label is-up">Telefon &amp; Adresse</span><span class="panel-value">034298 38315</span><span class="panel-value is-light">Freiligrathstraße 5, Taucha</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2 Über uns -->
+    <section class="block">
+      <div class="block-head"><span class="num">02</span><h2>Text mit Bild</h2></div>
+      <div class="notes">
+        <div class="note bad">
+          <h3>Vorher</h3>
+          <ul>
+            <li><span class="cat">Abstände</span><span>Die Abstände sind umgedreht: zwischen Überschrift und Text liegen <code>40px</code>, zwischen Text und Button nur <code>~28px</code>. Der Button klebt am Text, die Überschrift schwebt darüber.</span></li>
+            <li><span class="cat">Weniger</span><span>Über dem Abschnitt stehen eine Trennlinie und zusätzlich über 100px Abstand. Das ist doppelt getrennt, denn der Abstand allein reicht schon.</span></li>
+            <li><span class="cat">Typografie</span><span>Der Fließtext hat <code>17,5px</code>, andere Blöcke <code>17</code> und <code>17,8px</code>. Der Button hat <code>15,5px</code> in 700, das nicht geladen ist und deshalb als 800 erscheint.</span></li>
+          </ul>
+        </div>
+        <div class="note good">
+          <h3>Nachher</h3>
+          <ul>
+            <li><span class="cat">Abstände</span><span>Was zusammengehört, steht eng: Überschrift → Text <code>16px</code>. Vor der Aktion folgt mehr Luft: Text → Button <code>48px</code>.</span></li>
+            <li><span class="cat">Weniger</span><span>Die Linie ist weg. Der Abstand trennt die Abschnitte schon.</span></li>
+            <li><span class="cat">Typografie</span><span>Es gibt eine Fließtextgröße (<code>18px</code>). Der Button ist genauso groß und hebt sich über 600 und die Farbe ab.</span></li>
+          </ul>
+        </div>
+      </div>
+      <div class="frame">
+        <div class="frame-bar"><span></span><span></span><span></span><em class="version-label">Vorher</em></div>
+        <div class="site v-before">
+          <div class="container"><div class="divider"></div></div>
+          <div class="section">
+            <div class="container two-col">
+              <div class="stack">
+                <h2 class="h2">Über unsere Praxis</h2>
+                <p class="text">In unserer HNO-Praxis in Taucha steht Ihr Wohlbefinden im Mittelpunkt. Dr. med. Veit Zebralla nimmt sich Zeit für Sie und Ihre Anliegen – medizinisch fundiert und menschlich zugewandt. Wir nehmen jeden Patienten ernst und begleiten Sie mit Kompetenz und Empathie auf Ihrem Weg zu besserer Gesundheit.</p>
+                <div class="actions"><a class="btn look-blue act-main" href="#">Mehr über uns</a></div>
+              </div>
+              <div class="img" style="aspect-ratio: 4/3"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3 Kontakt -->
+    <section class="block">
+      <div class="block-head"><span class="num">03</span><h2>Kontakt &amp; Öffnungszeiten</h2></div>
+      <div class="notes">
+        <div class="note bad">
+          <h3>Vorher</h3>
+          <ul>
+            <li><span class="cat">Farbe</span><span>Eine grüne Karte liegt auf einer Teal-Fläche. Das sind zwei kräftige Farben direkt übereinander, und Grün kommt sonst nirgends auf der Seite vor.</span></li>
+            <li><span class="cat">Kontrast</span><span>Der Kicker steht direkt auf Teal (<code>3,46:1</code>), der Hinweis darunter ebenfalls. Transparente Schrift wäre dort noch schlechter: Weiß mit 80 % Deckkraft hat nur <code>2,75:1</code>.</span></li>
+            <li><span class="cat">Hierarchie</span><span>„Heute“ ist dreifach markiert: weiße Fläche, extrafette Schrift und zusätzlich ein <code>9px</code>-Badge.</span></li>
+            <li><span class="cat">Konsistenz</span><span>Die Wochentage sind uneinheitlich: Montag in 600, Mittwoch in 400, Dienstag in 800. Außerdem hat jede Zeile eine eigene Linie.</span></li>
+            <li><span class="cat">Typografie</span><span>Allein in dieser Karte stehen sechs Größen: <code>19</code>, <code>15,5</code>, <code>15</code>, <code>14,5</code>, <code>14</code> und <code>9px</code>. Adresse und Anfahrt sind kleiner als der Fließtext.</span></li>
+          </ul>
+        </div>
+        <div class="note good">
+          <h3>Nachher</h3>
+          <ul>
+            <li><span class="cat">Farbe</span><span>Die Karte ist nur ein dunklerer Teal-Ton. Das ist eine Farbfamilie statt zwei, ruhiger und hochwertiger.</span></li>
+            <li><span class="cat">Kontrast</span><span>Dunkleres Teal und keine Transparenz auf farbigen Flächen. Nebeninfos treten über die Größe zurück, nicht über Deckkraft. Alle Texte liegen bei mindestens <code>4,8:1</code>.</span></li>
+            <li><span class="cat">Hierarchie</span><span>„Heute“ ist nur über eine leichte Fläche und 600 markiert. Das reicht völlig.</span></li>
+            <li><span class="cat">Weniger</span><span>Die Linien zwischen den Zeilen und über dem Hinweis sind weg. Der Abstand gliedert schon.</span></li>
+            <li><span class="cat">Arztpraxis</span><span>Telefon, Öffnungszeiten und Anfahrt sind das Wichtigste und bekommen volle Textgröße. Das Telefon ist die Hauptaktion (gefüllt), der Termin-Link die Nebenaktion.</span></li>
+          </ul>
+        </div>
+      </div>
+      <div class="frame">
+        <div class="frame-bar"><span></span><span></span><span></span><em class="version-label">Vorher</em></div>
+        <div class="site v-before">
+          <div class="section s-contact on-dark">
+            <div class="container">
+              <div class="head">
+                <span class="kicker">Praxis &amp; Sprechzeiten</span>
+                <h2 class="h2">Kontakt</h2>
+              </div>
+              <div class="contact-card">
+                <div>
+                  <h3 class="h3">Öffnungszeiten</h3>
+                  <div class="hours">
+                    <div><span class="day">Montag</span><span>8–12 · 14–17 Uhr</span></div>
+                    <div class="today"><span>Dienstag<span class="badge">heute</span></span><span>8–13 Uhr</span></div>
+                    <div><span class="day is-off">Mittwoch</span><span>geschlossen</span></div>
+                    <div><span class="day">Donnerstag</span><span>8–12 Uhr</span></div>
+                    <div><span class="day">Freitag</span><span>8–12 Uhr</span></div>
+                  </div>
+                  <p class="hours-note">und nach Terminvereinbarung</p>
+                  <div class="extra-row"><span><b>Akut-Sprechstunde</b> ohne Termin</span><span class="strong">Mo 8–12 Uhr</span></div>
+                  <div class="extra-row"><span><b>Telefonsprechzeiten</b></span><span class="strong">Mo 8–12 Uhr</span></div>
+                  <div class="actions">
+                    <a class="btn look-outline act-main" href="#">034298 38315</a>
+                    <a class="btn look-outline act-second" href="#">zur Terminvereinbarung</a>
+                  </div>
+                </div>
+                <div>
+                  <h3 class="h3">Kontakt &amp; Anfahrt</h3>
+                  <ul class="contact-list">
+                    <li><b>Adresse:</b> Freiligrathstraße 5, 04425 Taucha</li>
+                    <li><b>Telefon:</b> 034298 38315</li>
+                  </ul>
+                  <p class="route">Mit öffentlichen Verkehrsmitteln erreichen Sie uns bequem über die nahegelegenen Haltestellen. Parkplätze stehen direkt vor Ort zur Verfügung.</p>
+                </div>
+              </div>
+              <p class="notice">ⓘ&nbsp;Hier steht ein kurzer Praxis-Hinweis.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4 Leistungen -->
+    <section class="block">
+      <div class="block-head"><span class="num">04</span><h2>Leistungen</h2></div>
+      <div class="notes">
+        <div class="note bad">
+          <h3>Vorher</h3>
+          <ul>
+            <li><span class="cat">Hierarchie</span><span>Die Leistungsnamen haben <code>18px</code> in 800, also dieselbe Stärke wie die Überschrift. Dadurch konkurrieren sie mit ihr.</span></li>
+            <li><span class="cat">Abstände</span><span>Überschrift → Liste <code>48px</code>, Liste → Button <code>42px</code>. Beides fast gleich, dadurch gehört der Button weder richtig dazu noch wirkt er wie ein eigener Schritt.</span></li>
+          </ul>
+        </div>
+        <div class="note good">
+          <h3>Nachher</h3>
+          <ul>
+            <li><span class="cat">Hierarchie</span><span>Die Einträge haben Fließtextgröße in 600. Sie sind klar klickbar, aber eindeutig unter der Überschrift eingeordnet.</span></li>
+            <li><span class="cat">Abstände</span><span>Die Überschrift steht nah an der Liste, der Button hat deutlich Luft: Überschrift → Liste → Aktion.</span></li>
+          </ul>
+        </div>
+      </div>
+      <div class="frame">
+        <div class="frame-bar"><span></span><span></span><span></span><em class="version-label">Vorher</em></div>
+        <div class="site v-before">
+          <div class="section">
+            <div class="container two-col">
+              <div class="stack leistungen">
+                <h2 class="h2">Leistungen</h2>
+                <ul class="services">
+                  <li>HNO-ärztliche Untersuchung</li>
+                  <li>Hörtest / Audiometrie</li>
+                  <li>Allergietestung</li>
+                  <li>Schnarch-Therapie / Schlafapnoe</li>
+                </ul>
+                <div class="actions"><a class="btn look-blue act-main" href="#">Alle Leistungen ansehen</a></div>
+              </div>
+              <div class="img" style="aspect-ratio: 1/1"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5 Termin -->
+    <section class="block">
+      <div class="block-head"><span class="num">05</span><h2>Termin-Hinweis</h2></div>
+      <div class="notes">
+        <div class="note bad">
+          <h3>Vorher</h3>
+          <ul>
+            <li><span class="cat">Weniger</span><span>Zwei Termin-Abschnitte folgen direkt aufeinander, beide mit Kicker „Termin“ und demselben Telefon-Button.</span></li>
+            <li><span class="cat">Konsistenz</span><span>„Wir sind für Sie da“ hat <code>29,5px</code>, alle anderen Abschnitte haben <code>40px</code>. Außerdem ist es technisch ein <code>&lt;p&gt;</code> statt einer <code>&lt;h2&gt;</code>.</span></li>
+            <li><span class="cat">Abstände</span><span>Der helle Abschnitt hat oben <code>80px</code> und unten <code>64px</code>. Die anderen haben rundherum etwa <code>110px</code>.</span></li>
+            <li><span class="cat">Konsistenz</span><span>Das Telefon ist hier die Hauptaktion, sieht aber aus wie ein Nebenbutton (heller Rahmen).</span></li>
+          </ul>
+        </div>
+        <div class="note good">
+          <h3>Nachher</h3>
+          <ul>
+            <li><span class="cat">Weniger</span><span>Es gibt einen Termin-Abschnitt, in Navy. So bleibt der Hell-Dunkel-Rhythmus erhalten: Leistungen hell → Termin dunkel → FAQ hell.</span></li>
+            <li><span class="cat">Konsistenz</span><span>Die Überschrift ist gleich groß wie alle anderen, der Untertitel ist normaler Fließtext.</span></li>
+            <li><span class="cat">Abstände</span><span>Alle Abschnitte haben dasselbe Innen-Padding.</span></li>
+            <li><span class="cat">Konsistenz</span><span>Das Telefon ist die Hauptaktion und deshalb gefüllt, genau wie im Hero.</span></li>
+          </ul>
+        </div>
+      </div>
+      <div class="frame">
+        <div class="frame-bar"><span></span><span></span><span></span><em class="version-label">Vorher</em></div>
+        <div class="site v-before">
+          <div class="section s-cta">
+            <div class="container stack">
+              <span class="kicker">Termin</span>
+              <h2 class="h2 is-cta">Wir sind für Sie da</h2>
+              <p class="text is-cta">Termine auch kurzfristig möglich</p>
+              <div class="actions"><a class="btn look-outline-light act-main" href="#">☏&nbsp; 034298 38315</a></div>
+            </div>
+          </div>
+          <div class="section s-cta is-navy is-duplicate on-dark">
+            <div class="container stack">
+              <span class="kicker">Termin</span>
+              <h2 class="h2 is-cta">Das ist eine Testüberschrift</h2>
+              <div class="actions"><a class="btn look-outline act-main" href="#">☏&nbsp; 034298 38315</a></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6 FAQ -->
+    <section class="block">
+      <div class="block-head"><span class="num">06</span><h2>FAQ</h2></div>
+      <div class="notes">
+        <div class="note bad">
+          <h3>Vorher</h3>
+          <ul>
+            <li><span class="cat">Konsistenz</span><span>Die Frage ist in 600, vergleichbare Einträge (Leistungen) sind in 800. Gleiche Rolle, unterschiedliche Stärke.</span></li>
+            <li><span class="cat">Farbe</span><span>Kicker in Blau, derselben Farbe wie die Buttons. Dadurch sieht der Kicker klickbar aus.</span></li>
+            <li><span class="cat">Typografie</span><span>Frage und Antwort haben <code>17px</code>, der Hinweis <code>14px</code>. Beides sind weitere Einzelgrößen.</span></li>
+          </ul>
+        </div>
+        <div class="note good">
+          <h3>Nachher</h3>
+          <ul>
+            <li><span class="cat">Konsistenz</span><span>Alle Listeneinträge (Leistungen, Fragen) sind Fließtext in 600.</span></li>
+            <li><span class="cat">Farbe</span><span>Der Kicker ist dezent in Grau. Blau bleibt reserviert für das, was man anklicken kann.</span></li>
+            <li><span class="cat">Typografie</span><span>Die Frage hebt sich nur über die Stärke von der Antwort ab, bei gleicher Größe.</span></li>
+          </ul>
+        </div>
+      </div>
+      <div class="frame">
+        <div class="frame-bar"><span></span><span></span><span></span><em class="version-label">Vorher</em></div>
+        <div class="site v-before">
+          <div class="section">
+            <div class="container">
+              <div class="head">
+                <span class="kicker">Häufige Fragen</span>
+                <h2 class="h2">FAQ</h2>
+              </div>
+              <div class="faq">
+                <div class="faq-item">
+                  <div class="faq-q"><span>Terminvergabe</span><span aria-hidden="true">−</span></div>
+                  <p class="text is-faq">Wir bitten zu berücksichtigen, dass unsere Praxis vor allem nach Terminvereinbarung arbeitet. Rufen Sie uns in der Telefonsprechzeit Mo 8–12 Uhr an.</p>
+                </div>
+                <div class="faq-item">
+                  <div class="faq-q"><span>Weitere Besonderheiten</span><span aria-hidden="true">+</span></div>
+                </div>
+                <div class="faq-item">
+                  <div class="faq-q"><span>Ich bin wegen einer bekannten Erkrankung in Behandlung – wann komme ich wieder?</span><span aria-hidden="true">+</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7 Aktuelles -->
+    <section class="block">
+      <div class="block-head"><span class="num">07</span><h2>Aktuelles-Kacheln</h2></div>
+      <div class="notes">
+        <div class="note bad">
+          <h3>Vorher</h3>
+          <ul>
+            <li><span class="cat">Konsistenz</span><span>Nur die erste Kachel ist ein Link und hat „Weiterlesen“. Die anderen beiden sehen genauso aus, lassen sich aber nicht anklicken.</span></li>
+            <li><span class="cat">Farbe</span><span>Der Platzhalter ist hellblau mit blauem Icon. Blau ist die Aktionsfarbe, und die leere Fläche wirkt so auffällig wie ein echtes Foto. Auch Kicker und Datum sind blau und sehen dadurch klickbar aus.</span></li>
+            <li><span class="cat">Typografie</span><span>Eine Kachel hat fünf Größen (<code>12</code>, <code>13</code>, <code>14</code>, <code>15</code> und <code>22px</code>). Außer dem Teaser ist alles in 800, das Datum hat nur <code>12px</code> in Großbuchstaben.</span></li>
+            <li><span class="cat">Abstände</span><span>Datum → Titel <code>10px</code>, Titel → Teaser <code>8px</code>, Teaser → Weiterlesen <code>16px</code>. Alles ist fast gleich eng, der Link klebt am Text und steht in jeder Kachel auf einer anderen Höhe.</span></li>
+            <li><span class="cat">Weniger</span><span>Kicker „Aktuelles“ und Überschrift „Neuigkeiten“ sagen dasselbe. Außerdem ist die Reihenfolge nicht chronologisch: 5. Feb, 29. Jan, 9. Feb.</span></li>
+          </ul>
+        </div>
+        <div class="note good">
+          <h3>Nachher</h3>
+          <ul>
+            <li><span class="cat">Konsistenz</span><span>Jede Kachel ist komplett klickbar und hat „Weiterlesen“, unten bündig auf gleicher Höhe (<code>mt-auto</code>). Beim Hover wird der Titel unterstrichen.</span></li>
+            <li><span class="cat">Farbe</span><span>Der Platzhalter ist neutral im Hintergrundton mit gedämpftem Icon, so gewinnt das echte Foto. Blau steht nur noch bei „Weiterlesen“.</span></li>
+            <li><span class="cat">Typografie</span><span>Alle Größen kommen aus der Skala (<code>15</code>, <code>18</code> und <code>22px</code>). Das Datum ist normal geschrieben und grau, der Titel in 600.</span></li>
+            <li><span class="cat">Abstände</span><span>Das Datum sitzt eng am Titel (<code>4px</code>), weil es zu ihm gehört. Titel → Teaser <code>12px</code>, vor „Weiterlesen“ mindestens <code>24px</code>.</span></li>
+            <li><span class="cat">Weniger</span><span>Der Kicker ist weg, die Überschrift reicht. Die neueste Meldung steht zuerst.</span></li>
+          </ul>
+        </div>
+      </div>
+      <div class="frame">
+        <div class="frame-bar"><span></span><span></span><span></span><em class="version-label">Vorher</em></div>
+        <div class="site v-before">
+          <div class="section news">
+            <div class="container">
+              <div class="head">
+                <span class="kicker">Aktuelles</span>
+                <h2 class="h2">Neuigkeiten</h2>
+              </div>
+              <div class="news-grid">
+                <a class="news-card" href="#">
+                  <div class="news-media is-photo"></div>
+                  <span class="news-date">5. Februar 2026</span>
+                  <h3 class="news-title">Herzlich Willkommen auf unserer neuen Website!</h3>
+                  <p class="news-teaser">Wir freuen uns, Sie auf unserer neu gestalteten Website begrüßen zu dürfen.</p>
+                  <span class="more">Weiterlesen <span aria-hidden="true">→</span></span>
+                </a>
+                <a class="news-card no-link" href="#">
+                  <div class="news-media is-empty"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2v4"/><path d="M12 2v4"/><path d="M16 2v4"/><rect width="16" height="18" x="4" y="4" rx="2"/><path d="M8 10h6"/><path d="M8 14h8"/><path d="M8 18h5"/></svg></div>
+                  <span class="news-date">29. Januar 2026</span>
+                  <h3 class="news-title">Urlaubszeit – Bitte beachten Sie unsere Öffnungszeiten</h3>
+                  <p class="news-teaser">Informationen zu unseren Sprechzeiten während der Urlaubszeit.</p>
+                  <span class="more">Weiterlesen <span aria-hidden="true">→</span></span>
+                </a>
+                <a class="news-card no-link newest" href="#">
+                  <div class="news-media is-empty"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2v4"/><path d="M12 2v4"/><path d="M16 2v4"/><rect width="16" height="18" x="4" y="4" rx="2"/><path d="M8 10h6"/><path d="M8 14h8"/><path d="M8 18h5"/></svg></div>
+                  <span class="news-date">9. Februar 2026</span>
+                  <h3 class="news-title">Urlaubszeiten</h3>
+                  <p class="news-teaser">Informationen zu unseren Sprechzeiten während der Urlaubszeit.</p>
+                  <span class="more">Weiterlesen <span aria-hidden="true">→</span></span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="extra">
+      <h2>Außerdem aufgefallen (nicht im Nachbau zu sehen)</h2>
+      <ul>
+        <li><strong>Doppelte Meldung (im Nachbau bewusst nicht geändert):</strong> „Urlaubszeit – Bitte beachten Sie unsere Öffnungszeiten“ und „Urlaubszeiten“ haben denselben Teaser. Das ist eher eine Inhaltsfrage für die Praxis: zusammenlegen oder die ältere Meldung entfernen.</li>
+        <li><strong>Schnitt 700 fehlt:</strong> Buttons nutzen <code>font-bold</code> (700), geladen sind aber nur 400, 500, 600 und 800. Der Browser weicht auf 800 aus. Das gleiche Problem hattet ihr laut Kommentar in der <code>tailwind.css</code> schon einmal mit 600.</li>
+        <li><strong>Formular-Labels:</strong> <code>13,5px</code> mit einer Zeilenhöhe von ebenfalls <code>13,5px</code> (1,0). Sobald ein Label umbricht, überlappen sich die Zeilen.</li>
+        <li><strong>HTML im Text:</strong> Die Überschriften „&lt;p&gt;Unsere Praxis erleben&lt;/p&gt;“ und „&lt;p&gt;Einblicke in die Praxis&lt;/p&gt;“ zeigen die HTML-Tags als Text an.</li>
+        <li><strong>Umlaute:</strong> Im Anfahrts-Text erscheinen HTML-Entities wie <code>&amp;uuml;</code> statt „ü“. Der Text wird doppelt maskiert.</li>
+        <li><strong>Einzelwerte im Code:</strong> <code>text-[0.95rem]</code>, <code>text-[0.97rem]</code>, <code>text-[0.9rem]</code>, <code>text-[0.85rem]</code> und <code>text-[0.78rem]</code>. Die fluide Skala (<code>--text-f-*</code>) ist schon angelegt und sollte statt dieser Einzelwerte genutzt werden.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script>
+    // Größen-Inventar (gemessen auf localhost:3001, ohne Dev-Tools-Panel)
+    const before = [56, 46, 40, 29.48, 26, 20, 19, 18, 17.8, 17.5, 17, 16, 15.52, 15.5, 15.2, 15, 14.5, 14.4, 14, 13.6, 13.5, 12.94, 12.5, 9];
+    const after = [
+      [56, 'H1'],
+      [40, 'H2'],
+      [22, 'H3'],
+      [18, 'Text'],
+      [15, 'Klein']
+    ];
+
+    function chip(size, label) {
+      const el = document.createElement('span');
+      el.className = 'chip';
+      el.innerHTML = `<span style="font-size:${size}px">Aa</span><small>${String(size).replace('.', ',')}px${label ? ' · ' + label : ''}</small>`;
+      return el;
+    }
+    before.forEach(size => document.getElementById('chips-before').appendChild(chip(size)));
+    after.forEach(([size, label]) => document.getElementById('chips-after').appendChild(chip(size, label)));
+
+    // Umschalten zwischen Vorher und Nachher
+    const buttons = document.querySelectorAll('.toggle button');
+    function setVersion(version) {
+      document.body.classList.toggle('show-before', version === 'before');
+      document.body.classList.toggle('show-after', version === 'after');
+      document.querySelectorAll('.site').forEach(site => {
+        site.classList.toggle('v-before', version === 'before');
+        site.classList.toggle('v-after', version === 'after');
+      });
+      document.querySelectorAll('.version-label').forEach(label => {
+        label.textContent = version === 'before' ? 'Vorher' : 'Nachher';
+      });
+      buttons.forEach(button => button.setAttribute('aria-pressed', button.dataset.version === version));
+    }
+    buttons.forEach(button => button.addEventListener('click', () => setVersion(button.dataset.version)));
+    document.addEventListener('keydown', event => {
+      if (event.code !== 'Space' || event.target.closest('button, a, input, textarea')) return;
+      event.preventDefault();
+      setVersion(document.body.classList.contains('show-before') ? 'after' : 'before');
+    });
+  </script>
+</body>
+</html>
