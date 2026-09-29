@@ -63,7 +63,8 @@
     { label: 'Team', to: '/#team' },
     { label: 'FAQ', to: '/#faq' },
     { label: 'Design-Guide', to: '/design-guide' },
-    { label: 'Farbtheorie', to: '/farbtheorie' }
+    { label: 'Farbtheorie', to: '/farbtheorie' },
+    { label: 'Farbpraxis', to: '/farbtheorie-praxis' }
   ]
 </script>
 

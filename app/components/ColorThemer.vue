@@ -64,39 +64,10 @@
 
       <!-- Farbkreis mit Markierungen -->
       <div class="flex gap-4 items-start">
-        <div
-          class="relative size-32 shrink-0 rounded-full"
-          :style="{ background: wheelGradient }">
-          <div class="absolute inset-0 rounded-full bg-[radial-gradient(circle_closest-side,var(--color-neutral-900)_52%,transparent_53%)]" />
-          <svg
-            viewBox="0 0 100 100"
-            class="absolute inset-0 size-full"
-            aria-hidden="true">
-            <polygon
-              v-if="markers.length > 2"
-              :points="markers.map(m => m.x + ',' + m.y).join(' ')"
-              fill="none"
-              stroke="white"
-              stroke-width="1"
-              stroke-opacity="0.8"/>
-            <line
-              v-if="markers.length === 2"
-              :x1="markers[0].x" :y1="markers[0].y"
-              :x2="markers[1].x" :y2="markers[1].y"
-              stroke="white"
-              stroke-width="1"
-              stroke-opacity="0.8"/>
-            <circle
-              v-for="(marker, index) in markers"
-              :key="index"
-              :cx="marker.x"
-              :cy="marker.y"
-              :r="index === 0 ? 6 : 4.5"
-              :fill="marker.hex"
-              stroke="white"
-              stroke-width="1.5"/>
-          </svg>
-        </div>
+        <ColorWheel
+          :harmony="palette.harmony"
+          :wheel="wheel"
+          class="size-32 shrink-0"/>
         <p class="text-sm text-neutral-300">
           {{ scheme.text }}
         </p>
@@ -191,25 +162,6 @@
   }
 
   const palette = computed(() => buildPalette(primary.value, scheme.value, wheel.value));
-
-  // Farbkreis als conic-gradient: bei RYB werden die Winkel auf echte Farbtöne umgerechnet
-  const wheelGradient = computed(() => {
-    const stops = [];
-    for (let angle = 0; angle <= 360; angle += 15) {
-      stops.push(`hsl(${wheelToHue(angle, wheel.value)} 85% 55%) ${angle}deg`);
-    }
-    return `conic-gradient(${stops.join(', ')})`;
-  });
-
-  // Position der Harmoniefarben auf dem Kreis (0° = oben, im Uhrzeigersinn)
-  const markers = computed(() => palette.value.harmony.map(color => {
-    const rad = color.angle * Math.PI / 180;
-    return {
-      x: 50 + 38 * Math.sin(rad),
-      y: 50 - 38 * Math.cos(rad),
-      hex: color.hex
-    };
-  }));
 
   const contrastChecks = computed(() => {
     const { primary, secondary, background, white } = palette.value.colors;

@@ -12,10 +12,10 @@ const RYB_RGB = [
 ]
 
 export const originalColors = {
-  primary: '#82563a',
-  secondary: '#30272a',
-  background: '#eeebe7',
-  white: '#fffbfb'
+  primary: '#623a82',
+  secondary: '#211f32',
+  background: '#ede3ec',
+  white: '#fbfafc'
 }
 
 export const colorSchemes = [
@@ -23,7 +23,7 @@ export const colorSchemes = [
     key: 'original',
     label: 'Original',
     offsets: [0],
-    text: 'Die Farben der Startseite zum Vergleich: ein warmes Braun als Akzent, fast neutrales Dunkel und Beige.'
+    text: 'Die Farben der Startseite zum Vergleich: ein Violett als Akzent, ein dunkles Blauviolett und ein zart mauve getönter Hintergrund. Die Farbtöne liegen nah beieinander (Blauviolett bis Mauve), im Grunde also ein analoges Schema.'
   },
   {
     key: 'complementary',
